@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added — 2026-10-16
 
+- CODE_OF_CONDUCT.md: Contributor Covenant 2.1 added at repository root (#117).
+  Enforcement contact points to the GitHub private security reporting URL.
+  CONTRIBUTING.md updated with a "Code of Conduct" section linking to it.
+
+- docs/testnet-demo.md: "Multisig governance demo" section (#90). Covers all
+  six steps: deploy multisig with `--owners` and `--threshold 1`, transfer
+  vesting admin via `transfer_admin`, submit a `ProposalAction::Call` proposal
+  for `create_schedule`, confirm (threshold 1), execute, and verify the schedule
+  was created. CLI commands match the real function signatures in
+  `contracts/multisig/src/lib.rs`.
+
+- contracts/multisig/src/lib.rs: `test_cancel_executed_proposal_panics` (#68).
+  Submits a proposal, confirms to threshold, executes it, then asserts that
+  calling `cancel()` on the now-Executed proposal panics with
+  `"proposal not pending"`. Mirrors the existing `test_execute_twice_panics`
+  pattern for the cancel path.
+
+- backend/src/routes/health.js: `GET /api/health/ready` endpoint (#119).
+  Checks `VESTING_CONTRACT_ID`, `TOKEN_CONTRACT_ID`, and
+  `MULTISIG_CONTRACT_ID` environment variables. Returns 200 with
+  `{ ready: true, contracts: { vesting, token, multisig } }` when at least
+  one contract ID is configured; returns 503 with `ready: false` when none
+  are set. Four new tests in `health.test.js` cover the 503 (none set), 200
+  (one set), 200 (all set), and per-contract boolean shape cases.
+
+### Added — 2026-10-16 (earlier)
+
 - contracts/vesting/README.md: "Rounding behavior" section (#96). Documents
   that `vested_amount` uses integer (floor) division
   (`elapsed * total_amount / total_duration`), explains dust accumulation until
