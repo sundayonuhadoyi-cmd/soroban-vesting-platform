@@ -1277,6 +1277,30 @@ mod tests {
         ms.cancel(&o2, &id);
     }
 
+    /// Attempting to cancel an already-executed proposal must panic with
+    /// "proposal not pending".  Mirrors `test_execute_twice_panics` but for
+    /// the cancel path.
+    #[test]
+    #[should_panic(expected = "proposal not pending")]
+    fn test_cancel_executed_proposal_panics() {
+        let (env, contract_id, o1, o2, _o3) = setup_2of3();
+        let ms = MultisigContractClient::new(&env, &contract_id);
+        let target = env.register(stub_token::StubToken, ());
+
+        // Submit, confirm to threshold, execute.
+        let id = ms.submit(
+            &o1,
+            &call_action(&env, &target, symbol_short!("ping")),
+            &String::from_str(&env, "cancel after execute test"),
+        );
+        ms.confirm(&o1, &id);
+        ms.confirm(&o2, &id);
+        ms.execute(&id);
+
+        // The proposal is now Executed — cancel() must panic.
+        ms.cancel(&o1, &id);
+    }
+
     #[test]
     fn test_revoke_drops_below_threshold_then_reconfirm_executes() {
         let (env, contract_id, o1, o2, _o3) = setup_2of3();
